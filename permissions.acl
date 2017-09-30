@@ -1,0 +1,120 @@
+/**
+ * Identity rules
+ */
+
+rule UserCanReadHisOwnIdentity {
+    description: "Allow all Users read his own identity"
+    participant(m): "io.devorchestra.kyc.User"
+    operation: READ
+    resource(v): "io.devorchestra.kyc.User"
+    condition: (v.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+/**
+ * Documents rules
+ */
+rule UserCanUploadDocument {
+    description: "Allow all Users upload Documents"
+    participant(m): "io.devorchestra.kyc.User"
+    operation: CREATE
+    resource(v): "io.devorchestra.kyc.Document"
+    condition: (v.owner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule UserCanReadHisOwnDocuments {
+    description: "Allow all Users read his own Documents"
+    participant(m): "io.devorchestra.kyc.User"
+    operation: READ
+    resource(v): "io.devorchestra.kyc.Document"
+    condition: (v.owner.getIdentifier() == m.getIdentifier())
+    action: ALLOW
+}
+
+rule ManagerCanReadUnprocessedDocuments{
+    description: "Allow all Users read his own Documents"
+    participant: "io.devorchestra.kyc.Manager"
+    operation: READ
+    resource(d): "io.devorchestra.kyc.Document"
+    condition: (d.status == "INPROGRESS")
+    action: ALLOW
+}
+
+rule ManagerCanProcessDocument{
+    description: "Allow Manager create ProcessDocument transaction"
+    participant: "io.devorchestra.kyc.Manager"
+    operation: CREATE
+    resource: "io.devorchestra.kyc.ProcessDocument"
+    action: ALLOW
+}
+
+rule ManagerCanProcessOnlyUnprocessedDocument{
+    description: "Allow Manager update only unprocessed Documents"
+    participant: "io.devorchestra.kyc.Manager"
+    operation: UPDATE, READ
+    resource(d): "io.devorchestra.kyc.Document"
+    transaction(tx): "io.devorchestra.kyc.ProcessDocument"
+    condition: (d.status == "INPROGRESS")
+    action: ALLOW
+}
+
+rule ManagerCanUpdateUserWhenProcessingDocument{
+    description: "Allow Manager update only unprocessed Documents"
+    participant: "io.devorchestra.kyc.Manager"
+    operation: UPDATE, READ
+    resource(u): "io.devorchestra.kyc.User"
+    transaction: "io.devorchestra.kyc.ProcessDocument"
+    condition: (u.verified == false)
+    action: ALLOW
+}
+
+/**
+ * Asset rules
+ */
+
+rule UserCanCreateSomeAssetWhenVerified {
+    description: "Allow verified User create SomeAsset"
+    participant(u): "io.devorchestra.kyc.User"
+    operation: CREATE
+    resource(a): "io.devorchestra.kyc.SomeAsset"
+    condition: (u.verified && a.owner.getIdentifier() == u.getIdentifier())
+    action: ALLOW
+}
+
+rule UserCanReadSomeAssetBelongsToHim {
+    description: "Allow User read his SomeAssets"
+    participant(u): "io.devorchestra.kyc.User"
+    operation: READ
+    resource(a): "io.devorchestra.kyc.SomeAsset"
+    condition: (a.owner.getIdentifier() == u.getIdentifier())
+    action: ALLOW
+}
+
+rule UserCanSendSomeTransactionWhenVerified{
+    description: "Allow verified Users create SomeTransaction transaction only with his assets"
+    participant(u): "io.devorchestra.kyc.User"
+    operation: CREATE, READ
+    resource(t): "io.devorchestra.kyc.SomeTransaction"
+    condition: (u.verified && t.asset.owner.getIdentifier() == u.getIdentifier())
+    action: ALLOW
+}
+
+rule UserCanUpdateSomeAsset{
+    description: "User can update "
+    participant(u): "io.devorchestra.kyc.User"
+    operation: UPDATE, READ
+    resource(a): "io.devorchestra.kyc.SomeAsset"
+    transaction(tx): "io.devorchestra.kyc.SomeTransaction"
+    condition: (a.owner.getIdentifier() == u.getIdentifier())
+    action: ALLOW
+}
+
+
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "org.hyperledger.composer.system.Participant"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}

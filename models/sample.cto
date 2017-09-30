@@ -1,0 +1,68 @@
+/**
+ * Sample business network definition.
+ */
+namespace io.devorchestra.kyc
+
+enum documentType {
+    o IDENTITY
+    o ADDRESS
+}
+
+enum documentStatus {
+    o INPROGRESS
+    o APPROVED
+    o REJECTED
+}
+
+
+participant User identified by userId {
+  o String userId
+  o Boolean verified default = false
+  o Boolean identity default = false
+  o Boolean address default = false
+}
+
+participant Manager identified by userId {
+  o String userId
+}
+
+participant App identified by userId {
+  o String userId
+}
+
+asset Document identified by documentId {
+  o String documentId
+  o String hash default= "none"
+  o String secret default= "none"
+  --> User owner
+  o documentType type
+  o documentStatus status default = "INPROGRESS"
+}
+
+asset SomeAsset identified by assetId {
+  o String assetId
+  --> User owner
+}
+
+transaction SomeTransaction{
+  --> SomeAsset asset
+  --> User newOwner
+  --> User oldOwner
+}
+
+transaction ProcessDocument {
+    --> Document document
+    o documentStatus status
+}
+
+event DocumentUploadedEvent {
+  --> Document document
+}
+
+event DocumentProcessedEvent {
+  --> Document document
+}
+
+event SomeTransactionEvent {
+  --> SomeAsset asset
+}

@@ -1,0 +1,6 @@
+query selectOnlyUnapprovedDocuments {
+  description: "Select only unapproved Documents"
+  statement:
+      SELECT io.devorchestra.kyc.Document
+          WHERE (status=="INPROGRESS")
+}
