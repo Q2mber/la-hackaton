@@ -55,9 +55,6 @@ transaction ProcessDocument {
     o documentStatus status
 }
 
-event DocumentUploadedEvent {
-  --> Document document
-}
 
 event DocumentProcessedEvent {
   --> Document document
